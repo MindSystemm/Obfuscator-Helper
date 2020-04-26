@@ -10,3 +10,8 @@ Please keep in mind that you may have to check performance with different exe (s
 It's not because your exe work on a simple crackme that it'll work on a big real exe
 
 Enjoy :tada: :lock:
+
+# To-do
+
+- Improve Design
+- Add new check? 
