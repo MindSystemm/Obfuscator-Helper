@@ -117,7 +117,7 @@ namespace ObfuscatorTools
             StartupLabel.Text = sw.Elapsed.TotalSeconds.ToString() + " s";
             sw.Stop();
             Stopwatch sw2 = Stopwatch.StartNew();
-            Process process2 = Process.Start(application);
+            Process process2 = Process.Start(obfapplication);
             process2.WaitForInputIdle();
             process2.Kill();
             sw2.Stop();
@@ -136,6 +136,7 @@ namespace ObfuscatorTools
             double FieldRatio = 0;
             double ResRatio = 0;
             double InstrRatio = 0;
+            double LocalRatio = 0;
             try
             {
                 ModuleDefMD module = ModuleDefMD.Load(application);
@@ -146,14 +147,21 @@ namespace ObfuscatorTools
                 {
                     MethodRatio += type.Methods.Count;
                     FieldRatio += type.Fields.Count;
+                    
                     foreach (MethodDef method in type.Methods)
                     {
+                        if (method.HasBody && method.Body.HasVariables)
+                        {
+                            LocalRatio += method.Body.Variables.Count;
+                        }
+                        
                         if (method.HasBody && method.Body.HasInstructions)
                         {
                             InstrRatio += method.Body.Instructions.Count;
                         }
                     }
                 }
+                LocalCount.Text = LocalRatio.ToString();
                 TypeCount.Text = TypeRatio.ToString();
                 MethodCount.Text = MethodRatio.ToString();
                 FieldCount.Text = FieldRatio.ToString();
@@ -172,31 +180,39 @@ namespace ObfuscatorTools
                 int FieldsCount = 0;
                 int InstructionsCount = 0;
                 int ResourcesCount = obfmodule.Resources.Count;
+                int LocalCounts = 0;
                 foreach (TypeDef type in obfmodule.Types)
                 {
                     MethodsCount += type.Methods.Count;
                     FieldsCount += type.Fields.Count;
                     foreach (MethodDef method in type.Methods)
                     {
-                        if(method.HasBody && method.Body.HasInstructions)
+                        if(method.HasBody && method.Body.HasVariables)
+                        {
+                            LocalCounts += method.Body.Variables.Count;
+                        }
+                   
+                        if (method.HasBody && method.Body.HasInstructions)
                         {
                             InstructionsCount += method.Body.Instructions.Count;
                         }
                       
                     }
                 }
+                LocalCount2.Text = LocalCounts.ToString();
                 TypeCount2.Text = TypesCount.ToString();
                 MethodCount2.Text = MethodsCount.ToString();
                 FieldCount2.Text = FieldsCount.ToString();
                 InstructionCount2.Text = InstructionsCount.ToString();
                 ResourceCount2.Text = ResourcesCount.ToString();
 
-
+                CheckRatio(Math.Round(LocalCounts / LocalRatio, 2), TRatio, 70);
                 CheckRatio(Math.Round(TypesCount / TypeRatio, 2), TRatio, 50);
                 CheckRatio(Math.Round(MethodsCount / MethodRatio, 2), MRatio, 40);
                 CheckRatio(Math.Round(FieldsCount / FieldRatio, 2), FRatio, 35);
                 CheckRatio(Math.Round(ResourcesCount / ResRatio, 2), RRatio, 10);
                 CheckRatio(Math.Round(InstructionsCount / InstrRatio, 2), IRatio, 50);
+                LoRatio.Text = (Math.Round(LocalCounts / LocalRatio, 2) * 100).ToString() + " %";
                 TRatio.Text = (Math.Round(TypesCount / TypeRatio, 2) * 100).ToString() + " %";
                 MRatio.Text = (Math.Round(MethodsCount / MethodRatio, 2) * 100).ToString() + " %";
                 FRatio.Text = (Math.Round(FieldsCount / FieldRatio,2) * 100).ToString() + " %";
